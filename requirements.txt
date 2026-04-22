@@ -1,0 +1,8 @@
+fastapi
+uvicorn
+fitparse
+pandas
+numpy
+plotly
+google-generativeai
+python-multipart
