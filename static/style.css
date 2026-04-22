@@ -241,3 +241,28 @@ header p {
     width: 100%;
     box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
 }
+
+/* Leaflet Custom Tooltip */
+.custom-tooltip {
+    background: var(--glass-bg);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid var(--glass-border);
+    color: var(--text-primary);
+    border-radius: 0.5rem;
+    padding: 0.75rem 1rem;
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.95rem;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+}
+
+.custom-tooltip::before {
+    display: none; /* Hide default leaflet tooltip arrow */
+}
+
+/* Fix Leaflet map controls dark mode blending */
+.leaflet-control-zoom a {
+    background: var(--glass-bg) !important;
+    color: var(--text-primary) !important;
+    border-color: var(--glass-border) !important;
+}
