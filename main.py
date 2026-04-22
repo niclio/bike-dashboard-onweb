@@ -79,8 +79,8 @@ async def analyze_coach(request: CoachRequest):
             "data": image_bytes
         }
 
-        # 這裡選擇使用速度較快的 flash 模型，若需要更深度的思考可改為 pro
-        model = genai.GenerativeModel('gemini-1.5-flash-latest') 
+        # 使用支援多模態與快速推論的最新 Gemini 2.5 Flash 模型
+        model = genai.GenerativeModel('gemini-2.5-flash') 
         
         prompt = f"""
         你是一位世界級專業單車教練。使用者剛完成了一趟騎乘。請根據以下分析指標與附上的趨勢圖，針對這趟騎乘給出 3-5 點具體的訓練反饋。

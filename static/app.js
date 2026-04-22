@@ -107,7 +107,7 @@ document.addEventListener('DOMContentLoaded', () => {
         renderLeafletMap(plot_data);
 
         // 3. Render Trend Chart with 4 metrics
-        renderPlotlyTrendChart(plot_data);
+        renderPlotlyTrendChart(plot_data, metrics);
     }
 
     function renderLeafletMap(plot_data) {
@@ -224,7 +224,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    function renderPlotlyTrendChart(plot_data) {
+    function renderPlotlyTrendChart(plot_data, metrics) {
         // Prepare speed data (m/s to km/h)
         const speedKmh = plot_data.speed.map(s => s !== null ? s * 3.6 : null);
 
