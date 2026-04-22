@@ -76,7 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         } catch (error) {
             console.error('Error:', error);
-            showStatus('發生網路錯誤，無法連接至伺服器', 'error');
+            showStatus('渲染發生錯誤: ' + error.message, 'error');
         } finally {
             btn.textContent = originalText;
             btn.disabled = false;
@@ -174,17 +174,13 @@ document.addEventListener('DOMContentLoaded', () => {
         // Fit map bounds to the polyline
         bikeMap.fitBounds(polyline.getBounds());
 
-        // Setup Hover Tooltip
-        const infoMarker = L.circleMarker([0,0], {radius: 5, color: '#ef4444', fillColor: '#ef4444', fillOpacity: 1, opacity: 1}).setOpacity(0);
-        infoMarker.addTo(bikeMap);
-        
-        const tooltip = L.tooltip({direction: 'top', offset: [0, -10], className: 'custom-tooltip'});
-        infoMarker.bindTooltip(tooltip);
+        // Setup Hover Tooltip using dynamic map layer
+        const tooltip = L.tooltip({className: 'custom-tooltip', direction: 'top', offset: [0, -10]});
 
         bikeMap.on('mousemove', function(e) {
             // Check if we are hovering near the polyline
-            if(!polyline.getBounds().contains(e.latlng)) {
-                hideTooltip();
+            if(!polyline.getBounds().pad(0.1).contains(e.latlng)) {
+                if(bikeMap.hasLayer(tooltip)) bikeMap.removeLayer(tooltip);
                 return;
             }
 
@@ -194,7 +190,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const lat2 = e.latlng.lat;
             const lng2 = e.latlng.lng;
             
-            // Subsampling for performance if needed, but 12k points is okay for linear scan
             for(let i=0; i<validPoints.length; i+=1) {
                 const p = validPoints[i];
                 const d = Math.pow(p.lat - lat2, 2) + Math.pow(p.lng - lng2, 2);
@@ -204,18 +199,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
 
-            // Threshold roughly equals to hovering over the line
-            if(minDist < 0.00005) {
-                infoMarker.setLatLng([closestPt.lat, closestPt.lng]);
-                infoMarker.setOpacity(1);
-                
+            if(minDist < 0.0002) { // Allow slightly wider hover distance
                 const idx = closestPt.idx;
                 const spd = plot_data.speed[idx] !== null ? (plot_data.speed[idx] * 3.6).toFixed(1) : '--';
                 const hr = plot_data.heart_rate[idx] !== null ? plot_data.heart_rate[idx] : '--';
                 const pwr = plot_data.power[idx] !== null ? Math.round(plot_data.power[idx]) : '--';
                 const cad = plot_data.cadence[idx] !== null ? Math.round(plot_data.cadence[idx]) : '--';
                 
-                tooltip.setContent(`
+                tooltip.setLatLng([closestPt.lat, closestPt.lng]).setContent(`
                     <div style="text-align:left; line-height: 1.4;">
                         <b style="color:#60a5fa">速度:</b> ${spd} km/h<br>
                         <b style="color:#ef4444">心率:</b> ${hr} bpm<br>
@@ -223,16 +214,14 @@ document.addEventListener('DOMContentLoaded', () => {
                         <b style="color:#10b981">踏頻:</b> ${cad} rpm
                     </div>
                 `);
-                infoMarker.openTooltip();
+                
+                if(!bikeMap.hasLayer(tooltip)) {
+                    tooltip.addTo(bikeMap);
+                }
             } else {
-                hideTooltip();
+                if(bikeMap.hasLayer(tooltip)) bikeMap.removeLayer(tooltip);
             }
         });
-
-        function hideTooltip() {
-            infoMarker.setOpacity(0);
-            infoMarker.closeTooltip();
-        }
     }
 
     function renderPlotlyTrendChart(plot_data) {
@@ -247,7 +236,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 type: 'scatter',
                 mode: 'lines',
                 line: {color: '#f59e0b', width: 1}, // Amber
-                yaxis: 'y1'
+                yaxis: 'y'
             },
             {
                 x: plot_data.timestamp,
@@ -337,7 +326,44 @@ document.addEventListener('DOMContentLoaded', () => {
             legend: { orientation: 'h', y: 1.15 }
         };
 
-        Plotly.newPlot('trend-chart-container', trendTraces, trendLayout, {responsive: true});
-        showStatus('圖表與地圖繪製完成！', 'success');
+        Plotly.newPlot('trend-chart-container', trendTraces, trendLayout, {responsive: true}).then(function() {
+            // 圖表渲染完畢後，啟動 AI 教練分析
+            getAICoachFeedback(metrics);
+        });
+        showStatus('圖表與地圖繪製完成！正在請 AI 教練分析數據...', 'success');
+    }
+
+    async function getAICoachFeedback(metrics) {
+        const feedbackDiv = document.getElementById('ai-feedback');
+        feedbackDiv.innerHTML = '<div class="pulse-ring"></div><p>正在仔細研讀您的數據圖表與各項指標...</p>';
+        
+        try {
+            // 將 Plotly 圖表轉為 Base64 圖片 (PNG, 800x400)
+            const chartImage = await Plotly.toImage('trend-chart-container', {format: 'png', width: 800, height: 400});
+            
+            // 傳送至後端
+            const response = await fetch('/api/analyze-coach', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    metrics: metrics,
+                    chart_image_base64: chartImage
+                })
+            });
+            
+            const result = await response.json();
+            
+            if (response.ok && result.status === 'success') {
+                feedbackDiv.innerHTML = `<div class="markdown-body">${marked.parse(result.feedback)}</div>`;
+                showStatus('分析完成！請查看下方教練反饋。', 'success');
+            } else {
+                feedbackDiv.innerHTML = `<p style="color: #ef4444;">分析失敗: ${result.detail}</p>`;
+                showStatus('AI 教練分析失敗', 'error');
+            }
+        } catch (error) {
+            console.error('AI Error:', error);
+            feedbackDiv.innerHTML = '<p style="color: #ef4444;">發生錯誤，無法取得 AI 反饋。</p>';
+            showStatus('發生錯誤，無法取得 AI 反饋', 'error');
+        }
     }
 });
