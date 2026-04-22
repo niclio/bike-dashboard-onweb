@@ -96,14 +96,16 @@ class FitProcessor:
     def calculate_metrics(self, df: pd.DataFrame) -> dict:
         """Calculate advanced metrics from the processed DataFrame"""
         metrics = {}
-        total_seconds = len(df)
-        
-        if total_seconds == 0:
+        if len(df) == 0:
             return metrics
             
+        # 計算總經過時間 (包含車錶 Auto-pause 未紀錄的時間)
+        total_elapsed_time_s = (df['timestamp'].max() - df['timestamp'].min()).total_seconds()
+        
         moving_seconds = len(df[df['speed'] >= 0.8])
-        metrics['total_elapsed_time_s'] = total_seconds
+        metrics['total_elapsed_time_s'] = int(total_elapsed_time_s)
         metrics['moving_time_s'] = moving_seconds
+        metrics['stopped_time_s'] = int(total_elapsed_time_s - moving_seconds)
         
         # Total Distance in km
         if 'distance' in df.columns and not df['distance'].isna().all():
@@ -122,10 +124,16 @@ class FitProcessor:
             
         # Interference & Recovery
         is_stopped = (df['behavior_state'] == 'Stopped').astype(int)
-        metrics['stop_count'] = int((is_stopped.diff() == 1).sum())
+        regular_stops = (is_stopped.diff() == 1).sum()
+        
+        # 加入 Auto-pause 的次數 (時間間隔大於 2 秒)
+        time_diffs = df['timestamp'].diff().dt.total_seconds()
+        auto_pauses = (time_diffs > 2).sum()
+        
+        metrics['stop_count'] = int(regular_stops + auto_pauses)
         
         coasting_seconds = len(df[df['behavior_state'] == 'Coasting'])
-        metrics['coasting_time_ratio'] = round(coasting_seconds / total_seconds, 3)
+        metrics['coasting_time_ratio'] = round(coasting_seconds / len(df), 3)
         
         # Burst Power (First 10s after starting to move from a stop)
         burst_powers = []

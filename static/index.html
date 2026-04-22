@@ -35,9 +35,38 @@
 
             <!-- Chart Area -->
             <section class="chart-section glass-panel">
-                <h2>📊 騎乘數據趨勢</h2>
-                <div id="chart-container" class="chart-placeholder">
+                <h2>📊 騎乘數據趨勢與軌跡</h2>
+                
+                <div id="chart-placeholder" class="chart-placeholder">
                     <p>上傳檔案以產生互動圖表</p>
+                </div>
+
+                <div id="dashboard-content" style="display: none; width: 100%;">
+                    <!-- Metrics Summary -->
+                    <div class="metrics-grid">
+                        <div class="metric-card">
+                            <span class="metric-label">標準化功率 (NP)</span>
+                            <span class="metric-value" id="val-np">-- W</span>
+                        </div>
+                        <div class="metric-card">
+                            <span class="metric-label">總距離</span>
+                            <span class="metric-value" id="val-dist">-- km</span>
+                        </div>
+                        <div class="metric-card">
+                            <span class="metric-label">停等次數</span>
+                            <span class="metric-value" id="val-stops">--</span>
+                        </div>
+                        <div class="metric-card">
+                            <span class="metric-label">滑行比例</span>
+                            <span class="metric-value" id="val-coast">-- %</span>
+                        </div>
+                    </div>
+
+                    <!-- Map -->
+                    <div id="map-container" class="chart-box" style="height: 400px; margin-bottom: 2rem; border-radius: 1rem; overflow: hidden; background: rgba(0,0,0,0.2);"></div>
+                    
+                    <!-- Trend Chart -->
+                    <div id="trend-chart-container" class="chart-box" style="height: 400px; border-radius: 1rem; background: rgba(0,0,0,0.2);"></div>
                 </div>
             </section>
 
