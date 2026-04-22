@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bike AI Dashboard | 專業單車數據教練</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+    <!-- Plotly CDN -->
+    <script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="glass-panel">
+            <h1>🚴‍♂️ Bike AI Dashboard</h1>
+            <p>您的專屬智能單車數據與教練反饋平台</p>
+        </header>
+
+        <main class="dashboard-grid">
+            <!-- Upload Section -->
+            <section class="upload-section glass-panel">
+                <div class="upload-area" id="drop-zone">
+                    <div class="upload-icon">📁</div>
+                    <h3>上傳 Wahoo .fit 檔案</h3>
+                    <p>拖曳檔案至此處，或點擊選擇檔案</p>
+                    <input type="file" id="file-input" accept=".fit" hidden>
+                    <button class="btn-primary" onclick="document.getElementById('file-input').click()">選擇檔案</button>
+                </div>
+                <div id="upload-status" class="status-message"></div>
+            </section>
+
+            <!-- Chart Area -->
+            <section class="chart-section glass-panel">
+                <h2>📊 騎乘數據趨勢</h2>
+                <div id="chart-container" class="chart-placeholder">
+                    <p>上傳檔案以產生互動圖表</p>
+                </div>
+            </section>
+
+            <!-- AI Feedback Area -->
+            <section class="feedback-section glass-panel">
+                <h2>🧠 AI 教練反饋</h2>
+                <div id="ai-feedback" class="feedback-placeholder">
+                    <div class="pulse-ring"></div>
+                    <p>等待分析資料...</p>
+                </div>
+            </section>
+        </main>
+    </div>
+    <script src="/static/app.js"></script>
+</body>
+</html>
