@@ -1,5 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
 import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
+import { getFirestore, collection, addDoc, serverTimestamp, onSnapshot, updateDoc } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+import { getStorage, ref, uploadBytes } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-storage.js";
 
 const firebaseConfig = {
   apiKey: "AIza" + "SyBdBn9tolh" + "KKGWU0x7w4x" + "WxWs-zcej8uI4",
@@ -13,6 +15,11 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
+const db = getFirestore(app);
+const storage = getStorage(app);
+
+// TODO: 後端部署後，請將此網址替換為 Render 的網址
+const API_BASE_URL = 'http://127.0.0.1:8000';
 
 document.addEventListener('DOMContentLoaded', () => {
     // Auth UI Elements
@@ -93,34 +100,72 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function uploadFile(file) {
-        const formData = new FormData();
-        formData.append('file', file);
+        if (!auth.currentUser) {
+            showStatus('請先登入才能上傳檔案', 'error');
+            return;
+        }
 
-        showStatus(`上傳中: ${file.name}...`, '');
-        
         const btn = document.querySelector('.btn-primary');
         const originalText = btn.textContent;
         btn.textContent = '處理中...';
         btn.disabled = true;
 
         try {
-            const response = await fetch('/api/upload-fit', {
-                method: 'POST',
-                body: formData
+            const uid = auth.currentUser.uid;
+            showStatus(`準備上傳: ${file.name}...`, '');
+            
+            // 1. 在 Firestore 建立紀錄
+            const rideRef = await addDoc(collection(db, 'rides'), {
+                userId: uid,
+                filename: file.name,
+                status: 'uploading',
+                createdAt: serverTimestamp()
             });
 
-            const result = await response.json();
+            // 2. 上傳檔案到 Firebase Storage
+            showStatus(`上傳檔案至 Storage...`, '');
+            const storageRef = ref(storage, `rides/${uid}/${rideRef.id}.fit`);
+            await uploadBytes(storageRef, file);
 
-            if (response.ok) {
-                showStatus('資料解析完成！正在繪製圖表...', 'success');
-                renderDashboard(result.data);
-            } else {
-                showStatus(result.detail || '上傳失敗', 'error');
-            }
+            // 3. 更新狀態，準備呼叫後端
+            await updateDoc(rideRef, { status: 'processing' });
+            showStatus('上傳成功！正在呼叫後端處理數據...', '');
+
+            // 4. 呼叫後端 API (Fire-and-forget)
+            fetch(`${API_BASE_URL}/api/process-ride`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ rideId: rideRef.id, userId: uid })
+            }).catch(e => console.error('API trigger error:', e));
+
+            // 5. 監聽 Firestore 狀態改變
+            const unsubscribe = onSnapshot(rideRef, (docSnap) => {
+                const data = docSnap.data();
+                if (data.status === 'completed') {
+                    showStatus('資料解析完成！正在繪製圖表...', 'success');
+                    if (data.result) {
+                        renderDashboard(data.result);
+                    }
+                    if (data.ai_feedback) {
+                        const feedbackDiv = document.getElementById('ai-feedback');
+                        feedbackDiv.innerHTML = `<div class="markdown-body">${marked.parse(data.ai_feedback)}</div>`;
+                    }
+                    unsubscribe();
+                    btn.textContent = originalText;
+                    btn.disabled = false;
+                } else if (data.status === 'error') {
+                    showStatus('處理失敗: ' + (data.error || '未知錯誤'), 'error');
+                    unsubscribe();
+                    btn.textContent = originalText;
+                    btn.disabled = false;
+                } else if (data.status === 'processing') {
+                    showStatus('後端處理中，請耐心等候...', '');
+                }
+            });
+
         } catch (error) {
             console.error('Error:', error);
-            showStatus('渲染發生錯誤: ' + error.message, 'error');
-        } finally {
+            showStatus('上傳發生錯誤: ' + error.message, 'error');
             btn.textContent = originalText;
             btn.disabled = false;
         }
