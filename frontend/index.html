@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="./style.css">
     <!-- Leaflet CSS & JS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
@@ -21,27 +21,37 @@
 <body>
     <div class="app-container">
         <!-- Header -->
-        <header class="glass-panel">
-            <h1>🚴‍♂️ Bike AI Dashboard</h1>
-            <p>您的專屬智能單車數據與教練反饋平台</p>
+        <header class="glass-panel" style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <h1>🚴‍♂️ Bike AI Dashboard</h1>
+                <p>您的專屬智能單車數據與教練反饋平台</p>
+            </div>
+            <div id="auth-container">
+                <!-- User info and login/logout button will be rendered here -->
+                <button id="login-btn" class="btn-primary" style="padding: 0.5rem 1rem;">登入</button>
+                <div id="user-info" style="display: none; align-items: center; gap: 1rem;">
+                    <span id="user-email"></span>
+                    <button id="logout-btn" class="btn-secondary" style="padding: 0.5rem 1rem;">登出</button>
+                </div>
+            </div>
         </header>
 
         <main class="dashboard-grid">
-            <!-- Upload Section -->
-            <section class="upload-section glass-panel">
-                <div class="upload-area" id="drop-zone">
-                    <div class="upload-icon">📁</div>
-                    <h3>上傳 Wahoo .fit 檔案</h3>
-                    <p>拖曳檔案至此處，或點擊選擇檔案</p>
-                    <input type="file" id="file-input" accept=".fit" hidden>
-                    <button class="btn-primary" onclick="document.getElementById('file-input').click()">選擇檔案</button>
-                </div>
-                <div id="upload-status" class="status-message"></div>
-            </section>
-
-            <!-- Chart Area -->
+            <!-- Chart Area with Upload -->
             <section class="chart-section glass-panel">
-                <h2>📊 騎乘數據趨勢與軌跡</h2>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                    <h2 style="margin-bottom: 0;">📊 騎乘數據趨勢與軌跡</h2>
+                    <!-- Upload Section inline -->
+                    <div class="upload-area" id="drop-zone" style="padding: 0.5rem 1rem; border-radius: 0.5rem; display: flex; align-items: center; gap: 1rem; margin: 0;">
+                        <span class="upload-icon" style="font-size: 1.5rem; margin: 0;">📁</span>
+                        <div style="text-align: left;">
+                            <h3 style="margin: 0; font-size: 1rem;">上傳 .fit 檔案</h3>
+                        </div>
+                        <input type="file" id="file-input" accept=".fit" hidden>
+                        <button class="btn-primary" onclick="document.getElementById('file-input').click()" style="padding: 0.4rem 0.8rem; font-size: 0.9rem;">選擇檔案</button>
+                    </div>
+                </div>
+                <div id="upload-status" class="status-message" style="margin-top: 0; margin-bottom: 1rem;"></div>
                 
                 <div id="chart-placeholder" class="chart-placeholder">
                     <p>上傳檔案以產生互動圖表</p>
@@ -86,6 +96,6 @@
             </section>
         </main>
     </div>
-    <script src="/static/app.js"></script>
+    <script type="module" src="./app.js"></script>
 </body>
 </html>

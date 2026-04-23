@@ -1,4 +1,47 @@
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBdBn9tolhKKGWU0x7w4xWxWs-zcej8uI4",
+  authDomain: "bike-dashboard-onweb.firebaseapp.com",
+  projectId: "bike-dashboard-onweb",
+  storageBucket: "bike-dashboard-onweb.firebasestorage.app",
+  messagingSenderId: "332541338580",
+  appId: "1:332541338580:web:630641e8aaaac6f36c6c41"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const provider = new GoogleAuthProvider();
+
 document.addEventListener('DOMContentLoaded', () => {
+    // Auth UI Elements
+    const loginBtn = document.getElementById('login-btn');
+    const logoutBtn = document.getElementById('logout-btn');
+    const userInfo = document.getElementById('user-info');
+    const userEmail = document.getElementById('user-email');
+    
+    // Auth State Listener
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            loginBtn.style.display = 'none';
+            userInfo.style.display = 'flex';
+            userEmail.textContent = user.displayName || user.email;
+        } else {
+            loginBtn.style.display = 'block';
+            userInfo.style.display = 'none';
+            userEmail.textContent = '';
+        }
+    });
+
+    loginBtn.addEventListener('click', () => {
+        signInWithPopup(auth, provider).catch(error => alert("登入失敗: " + error.message));
+    });
+
+    logoutBtn.addEventListener('click', () => {
+        signOut(auth).catch(error => console.error(error));
+    });
+
     const dropZone = document.getElementById('drop-zone');
     const fileInput = document.getElementById('file-input');
     const statusMsg = document.getElementById('upload-status');

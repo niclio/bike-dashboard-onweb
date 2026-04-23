@@ -2,8 +2,7 @@ import os
 import shutil
 import base64
 from fastapi import FastAPI, UploadFile, File
-from fastapi.responses import FileResponse
-from fastapi.staticfiles import StaticFiles
+
 from pydantic import BaseModel
 import uvicorn
 import google.generativeai as genai
@@ -21,15 +20,7 @@ app = FastAPI(
 )
 
 # 確保目錄存在
-os.makedirs("static", exist_ok=True)
 os.makedirs("temp", exist_ok=True)
-
-# 掛載靜態檔案目錄
-app.mount("/static", StaticFiles(directory="static"), name="static")
-
-@app.get("/")
-def read_root():
-    return FileResponse("static/index.html")
 
 @app.post("/api/upload-fit")
 async def upload_fit(file: UploadFile = File(...)):
