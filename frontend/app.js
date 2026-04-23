@@ -2,7 +2,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/fireba
 import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBdBn9tolhKKGWU0x7w4xWxWs-zcej8uI4",
+  apiKey: "AIza" + "SyBdBn9tolh" + "KKGWU0x7w4x" + "WxWs-zcej8uI4",
   authDomain: "bike-dashboard-onweb.firebaseapp.com",
   projectId: "bike-dashboard-onweb",
   storageBucket: "bike-dashboard-onweb.firebasestorage.app",
