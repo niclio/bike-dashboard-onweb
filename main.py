@@ -20,11 +20,15 @@ load_dotenv()
 # 指向您的 Firebase Service Account JSON 檔案
 try:
     if not firebase_admin._apps:
-        firebase_admin.initialize_app()
+        if os.path.exists("firebase-admin.json"):
+            cred = credentials.Certificate("firebase-admin.json")
+            firebase_admin.initialize_app(cred)
+        else:
+            firebase_admin.initialize_app()
     db = firestore.client()
     bucket = fb_storage.bucket('bike-dashboard-onweb.firebasestorage.app')
 except Exception as e:
-    print(f"Firebase Admin SDK 初始化失敗 (可忽略，如果您尚未設定憑證): {e}")
+    print(f"Firebase Admin SDK 初始化失敗: {e}")
 
 app = FastAPI(
     title="Bike AI Dashboard API",
