@@ -1,9 +1,13 @@
 # Bike Dashboard OnWeb
 
-## 🚀 目前專案狀態
+## 🚀 目前專案狀態 (更新於 2026-05-08)
 本專案為單車 AI 儀表板，支援 `.fit` 檔案解析、地圖軌跡、數據圖表以及 Gemini AI 教練分析。
-- **程式碼更新**：最近已完成 `main.py` 的相關修改與功能調整。
-- **安全性更新**：為了避免 Firebase 金鑰外洩，已將 `firebase-admin.json` 加入 `.gitignore` 中。
+- **線上部署測試中**：
+  - 後端已成功部署至 Render (`https://bike-dashboard-onweb.onrender.com`)。
+  - 前端已成功部署至 Vercel (`https://bike-dashboard-onweb.vercel.app`)。
+  - Firebase Authentication (Google 登入)、Firestore 與 Storage 皆已在 Firebase 控制台建立並設定完成。
+  - **已知問題**：目前線上版上傳 `.fit` 檔案時會卡在「準備上傳...」，尚未進入 Storage 上傳階段。推測可能是 Firebase 新建立的資料庫尚未完全開通，或是瀏覽器快取/擴充功能阻擋了 Firestore 連線。
+- **本地端測試**：為了方便除錯，目前前端 `app.js` 的 `API_BASE_URL` 暫時改回 `http://127.0.0.1:8000`，以便先在本地端確認 Firebase 連線與功能是否正常。
 
 ---
 

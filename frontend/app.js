@@ -19,7 +19,7 @@ const db = getFirestore(app);
 const storage = getStorage(app);
 
 // TODO: 後端部署後，請將此網址替換為 Render 的網址
-const API_BASE_URL = 'https://bike-dashboard-onweb.onrender.com';
+const API_BASE_URL = 'http://127.0.0.1:8000';
 
 document.addEventListener('DOMContentLoaded', () => {
     // Auth UI Elements
